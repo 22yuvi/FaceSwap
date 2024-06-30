@@ -114,7 +114,11 @@ if st.button("Swap"):
                 source_img = os.path.join(working_dir, "source.png")
                 img.save(source_img)
                 out.release()
-                run(quality)
+                if quality == 'High':
+                  boolq = True
+                else:
+                  boolq = False
+                run(boolq)
                 st.video(cv2.imread(output_vid))
                 video.release()
                 st.download_button(
