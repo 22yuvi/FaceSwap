@@ -227,12 +227,23 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
     source_face = get_one_face(cv2.imread(source_path))
     reference_frame = cv2.imread(temp_frame_paths[0])
     reference_face = get_one_face(reference_frame)
-    for temp_frame_path in temp_frame_paths:
+    total_frames = total = len(temp_frame_paths)
+    progress_bar = st.progress(0)
+    start_time = time.time()
+    time_text = st.text("Time Remaining: ")
+    for i, temp_frame_path in enumerate(temp_frame_paths):
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
         cv2.imwrite(temp_frame_path, result)
+        elapsed_time = time.time() - start_time
+        frames_completed = i+1
+        frames_remaining = total_frames - frames_completed
+        time_remaining = (frames_remaining / frames_completed) * elapsed_time
+        progress_bar.progress(frames_completed / total_frames) 
         if update:
             update()
+    time_text.empty()
+    progress_bar.empty()
 
 # def get_face_enhancer() -> Any:
 #     global FACE_ENHANCER
@@ -307,41 +318,30 @@ def restore_audio(target_path: str, temp_directory_path: str, output_path: str) 
 def start() -> Optional[str]:
     if not pre_start():
         return
-    # Process image to videos #
-    print('Creating temporary resources...')
-    # create temp dir
-    target_directory_path = os.path.dirname(target_path)
-    temp_directory_path = os.path.join(target_directory_path, 'temp')
-    Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
-    # extract frames
-    fps = detect_fps(target_path)
-    st.write(f'Extracting frames with {fps} FPS...')
-    extract_frames(target_path, temp_directory_path, fps)
-    # process frame
-    temp_frame_paths = glob.glob((os.path.join(glob.escape(temp_directory_path), '*.' + 'png')))
+    with st.spinner("Preparing..."):
+        target_directory_path = os.path.dirname(target_path)
+        temp_directory_path = os.path.join(target_directory_path, 'temp')
+        Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
+        fps = detect_fps(target_path)
+    with st.spinner(f'Extracting frames with {fps} FPS...'):
+        extract_frames(target_path, temp_directory_path, fps)
+        temp_frame_paths = glob.glob((os.path.join(glob.escape(temp_directory_path), '*.' + 'png')))
     if temp_frame_paths:
-        st.write('Swapping Progressing...')
-        process_video(source_path, temp_frame_paths, process_frames)
-        # print('Enhancing Progressing...')
-        # process_video(None, temp_frame_paths, enhance_frames)
+        with st.spinner('Swapping Progressing...'):
+            process_video(source_path, temp_frame_paths, process_frames)
+        # with st.spinner('Enhancing Progressing...')
+            # process_video(None, temp_frame_paths, enhance_frames)
     else:
-        print('Frames not found...')
+        st.write('Frames not found...')
         return
-    # create video
-    st.write(f'Creating video with {fps} FPS...')
-    create_video(target_path, temp_directory_path, fps)
-    # handle audio
-    st.write('Restoring audio...')
-    restore_audio(target_path, temp_directory_path, output_path)
-    # # clean temp
-    # print('Cleaning temporary resources...')
-    # clean_temp(target_path)
-    # validate video
+    with st.spinner(f'Creating video with {fps} FPS...'):
+        create_video(target_path, temp_directory_path, fps)
+    with st.spinner('Restoring audio...'):
+        restore_audio(target_path, temp_directory_path, output_path)
     if is_video(output_path):
-        st.write('Processing to video succeed!')
+        st.video(cv2.imread(output_path))
     else:
         st.write('Processing to video failed!')
-    return output_path
 
 def conditional_download(download_directory_path: str, urls: List[str]) -> Optional[str]:
     if not os.path.exists(download_directory_path):
@@ -359,4 +359,4 @@ def run() -> Optional[str]:
         return
     conditional_download(face_swapper_path, ['https://huggingface.co/CountFloyd/deepfake/resolve/main/inswapper_128.onnx'])
     conditional_download(face_enhancer_path, ['https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth'])
-    return start()
+    start()
