@@ -9,6 +9,7 @@ import cv2
 import moviepy.editor as mp
 from PIL import Image
 from streamlit_image_select import image_select
+import glob
 from FinalFaceSwapCode import run
 
 # Set page configuration
@@ -52,16 +53,18 @@ if selected == 'Use Available Images':
                               menu_icon='person',
                               default_index=0)
     if gender == 'Male':
+        imgs = glob.glob((os.path.join(glob.escape(male_images), '*.' + 'jpg')))
         image = image_select(
             label="Male",
-            images=glob.glob((os.path.join(glob.escape(male_images), '*.' + 'png'))),
-            captions=[os.path.splitext(os.path.basename(image))[0] for image in images],
+            images=imgs,
+            captions=[os.path.splitext(os.path.basename(image))[0] for image in imgs],
         )
     if gender == 'Female':
+        imgs = glob.glob((os.path.join(glob.escape(male_images), '*.' + 'jpg')))
         image = image_select(
             label="Female",
-            images=glob.glob((os.path.join(glob.escape(female_images), '*.' + 'png'))),
-            captions=[os.path.splitext(os.path.basename(image))[0] for image in images],
+            images=imgs,
+            captions=[os.path.splitext(os.path.basename(image))[0] for image in imgs],
         )
     img = Image.open(image)
 
