@@ -33,9 +33,8 @@ st.write("""
 """)
 
 working_dir = os.path.dirname(os.path.abspath(__file__))
-images_path = os.path.join(working_dir, "images")
-male_images = os.path.join(images_path, "male")
-female_images = os.path.join(images_path, "female")
+male_images = os.path.join(working_dir, "male")
+female_images = os.path.join(working_dir, "female")
 
 if selected == 'Use Available Images':
     col1, col2 = st.columns([0.5, 0.5])
