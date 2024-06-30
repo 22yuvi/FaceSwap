@@ -315,7 +315,7 @@ def restore_audio(target_path: str, temp_directory_path: str, output_path: str) 
     if not done:
         move_temp(temp_output_path, output_path)
 
-def start() -> Optional[str]:
+def start(quality: bool) -> Optional[str]:
     if not pre_start():
         return
     with st.spinner("Preparing..."):
@@ -329,8 +329,9 @@ def start() -> Optional[str]:
     if temp_frame_paths:
         with st.spinner('Swapping Progressing...'):
             process_video(source_path, temp_frame_paths, process_frames)
-        # with st.spinner('Enhancing Progressing...')
-            # process_video(None, temp_frame_paths, enhance_frames)
+        if quality:
+            with st.spinner('Enhancing Progressing...')
+                process_video(None, temp_frame_paths, enhance_frames)
     else:
         st.write('Frames not found...')
         return
@@ -354,9 +355,9 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> Optio
             with tqdm(total=total, desc='Downloading', unit='B', unit_scale=True, unit_divisor=1024) as progress:
                 urllib.request.urlretrieve(url, download_file_path, reporthook=lambda count, block_size, total_size: progress.update(block_size))  # type: ignore[attr-defined]
 
-def run() -> Optional[str]:
+def run(quality: bool) -> Optional[str]:
     if not pre_check():
         return
     conditional_download(face_swapper_path, ['https://huggingface.co/CountFloyd/deepfake/resolve/main/inswapper_128.onnx'])
     conditional_download(face_enhancer_path, ['https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth'])
-    start()
+    start(quality)
