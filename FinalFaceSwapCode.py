@@ -9,6 +9,7 @@ import urllib
 from pathlib import Path
 from typing import List, Optional, Any, Callable
 from tqdm import tqdm
+import time
 import onnxruntime
 # import tensorflow
 import sys
@@ -330,7 +331,7 @@ def start(quality: bool) -> Optional[str]:
         with st.spinner('Swapping Progressing...'):
             process_video(source_path, temp_frame_paths, process_frames)
         if quality:
-            with st.spinner('Enhancing Progressing...')
+            with st.spinner('Enhancing Progressing...'):
                 process_video(None, temp_frame_paths, enhance_frames)
     else:
         st.write('Frames not found...')
@@ -340,7 +341,7 @@ def start(quality: bool) -> Optional[str]:
     with st.spinner('Restoring audio...'):
         restore_audio(target_path, temp_directory_path, output_path)
     if is_video(output_path):
-        st.video(cv2.imread(output_path))
+        st.video(output_path)
     else:
         st.write('Processing to video failed!')
 
