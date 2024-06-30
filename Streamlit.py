@@ -99,7 +99,7 @@ if st.button("Swap"):
 
             with col2:
                 st.markdown('<p style="text-align: center;">After</p>', unsafe_allow_html=True)
-
+                total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
                 fps = video.get(cv2.CAP_PROP_FPS)
                 width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -119,7 +119,6 @@ if st.button("Swap"):
                 else:
                   boolq = False
                 run(boolq)
-                st.video(cv2.imread(output_vid))
                 video.release()
                 st.download_button(
                             label="Download Swapped Video",
