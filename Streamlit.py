@@ -36,6 +36,7 @@ st.write("""
 working_dir = os.path.dirname(os.path.abspath(__file__))
 male_images = os.path.join(working_dir, "male")
 female_images = os.path.join(working_dir, "female")
+output_vid = os.path.join(working_dir, "source-target.mp4")
 
 if selected == 'Use Available Images':
     col1, col2 = st.columns([0.5, 0.5])
@@ -51,7 +52,7 @@ if selected == 'Use Available Images':
                               ['High',
                                 'Normal'],
                               menu_icon='person',
-                              default_index=0)
+                              default_index=1)
     if gender == 'Male':
         imgs = glob.glob((os.path.join(glob.escape(male_images), '*.' + 'jpg')))
         image = image_select(
@@ -99,33 +100,26 @@ if st.button("Swap"):
             with col2:
                 st.markdown('<p style="text-align: center;">After</p>', unsafe_allow_html=True)
 
-                with st.spinner("Swapping Faces..."):
-                    output_frames = []
-                    total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-                    progress_bar = st.progress(0)  # Create a progress bar
-
-                    start_time = time.time()
-                    time_text = st.text("Time Remaining: ")  # Initialize text value
-                    fps = video.get(cv2.CAP_PROP_FPS)
-                    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-                    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # Codec for .mp4 files
-                    output_path = os.path.join(working_dir, "target.mp4")
-                    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-                    for _ in tqdm(range(total_frames), unit='frame', desc="Progress"):
-                        ret, frame = video.read()
-                        out.write(frame) 
-                        if not ret:
-                            break
-                    source_img = os.path.join(working_dir, "source.png")
-                    img.save(source_img)
-                    out.release()
-                    converted_filename = run()
-                    st.video(cv2.imread(converted_filename))
-                  
+                fps = video.get(cv2.CAP_PROP_FPS)
+                width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # Codec for .mp4 files
+                output_path = os.path.join(working_dir, "target.mp4")
+                out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+                for _ in tqdm(range(total_frames), unit='frame', desc="Progress"):
+                    ret, frame = video.read()
+                    out.write(frame) 
+                    if not ret:
+                        break
+                source_img = os.path.join(working_dir, "source.png")
+                img.save(source_img)
+                out.release()
+                run(quality)
+                st.video(cv2.imread(output_vid))
+                video.release()
                 st.download_button(
-                            label="Download Colorized Video",
-                            data=open(converted_filename.name, "rb").read(),
+                            label="Download Swapped Video",
+                            data=open(output_vid, "rb").read(),
                             file_name="swapped_video.mp4"
                         )
 
