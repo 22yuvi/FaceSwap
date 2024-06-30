@@ -78,6 +78,12 @@ if selected == 'Upload Custom Images':
             col1, col2 = st.columns([0.5, 0.5])
             with col1:
                 st.image(img)
+            with col2:
+                quality = option_menu('Select Output Quality',
+                                        ['High',
+                                          'Normal'],
+                                        menu_icon='person',
+                                        default_index=1)
 
 uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
 
