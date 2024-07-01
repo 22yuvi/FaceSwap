@@ -159,8 +159,12 @@ def update_progress(progress, progress_bar, progress_text, total, queue_per_futu
     process = psutil.Process(os.getpid())
     memory_usage = process.memory_info().rss / 1024 / 1024 / 1024
     progress += queue_per_future
-    progress_bar.progress(progress / total)
-    progress_text.text(f"Progress: {progress}/{total} - Memory usage: {memory_usage:.2f} GB")
+    if frames_completed < total_frames:
+        progress_bar.progress(progress / total)
+        progress_text.text(f"Progress: {progress}/{total} - Memory usage: {memory_usage:.2f} GB")
+    else:
+        progress_text.empty()  # Remove text value
+        progress_bar.empty()
     return progress
 
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[int], int]) -> None:
