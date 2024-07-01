@@ -10,9 +10,15 @@ import moviepy.editor as mp
 from PIL import Image
 from streamlit_image_select import image_select
 import glob
+from streamlit_lottie import st_lottie
 from FinalFaceSwapCode import run
 
-# Set page configuration
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+  
 st.set_page_config(page_title="Face Swapper",
                    layout="wide",
                    page_icon="🧑‍⚕️")
@@ -28,10 +34,16 @@ with st.sidebar:
 
 
 st.title('Face Swap using Inswapper')
-st.write("""
-## Face Swapper
-##### Upload a video and replace the face in the video with available faces or upload a custom image for face swap.
-""")
+col1, col2 = st.columns([1, 3])
+url = "https://lottie.host/dd7d9b7b-7713-423a-b3a9-8c78c21a1644/yVdrKmczvO.json"
+with col1:
+    lottie = load_lottieurl(url)
+    st_lottie(lottie)
+with col2:
+    st.write("""
+    ## Face Swapper
+    ##### Upload a video and replace the face in the video with available faces or upload a custom image for face swap.
+    """)
 
 working_dir = os.path.dirname(os.path.abspath(__file__))
 male_images = os.path.join(working_dir, "male")
