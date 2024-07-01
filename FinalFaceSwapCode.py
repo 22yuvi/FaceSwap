@@ -232,19 +232,20 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
     progress_bar = st.progress(0)
     start_time = time.time()
     time_text = st.text("Time Remaining: ")
-    for i, temp_frame_path in enumerate(temp_frame_paths):
+    i = 0
+    for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
         cv2.imwrite(temp_frame_path, result)
         elapsed_time = time.time() - start_time
-        frames_completed = i+1
+        i = i + 1
+        frames_completed = i
         frames_remaining = total_frames - frames_completed
         time_remaining = (frames_remaining / frames_completed) * elapsed_time
         progress_bar.progress(frames_completed / total_frames) 
         if update:
             update()
-    time_text.empty()
-    progress_bar.empty()
+
 
 # def get_face_enhancer() -> Any:
 #     global FACE_ENHANCER
