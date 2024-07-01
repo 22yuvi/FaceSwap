@@ -154,36 +154,62 @@ def pick_queue(queue: Queue[str], queue_per_future: int) -> List[str]:
         if not queue.empty():
             queues.append(queue.get())
     return queues
-
-def update_progress(progress: Any = None) -> None:
+    
+def update_progress(progress, progress_bar, progress_text, total, queue_per_future):
     process = psutil.Process(os.getpid())
     memory_usage = process.memory_info().rss / 1024 / 1024 / 1024
-    progress.set_postfix({
-        'memory_usage': '{:.2f}'.format(memory_usage).zfill(5) + 'GB',
-        'execution_providers': execution_providers,
-        'execution_threads': execution_threads
-    })
-    progress.refresh()
-    progress.update(1)
+    progress += queue_per_future
+    progress_bar.progress(progress / total)
+    progress_text.text(f"Progress: {progress}/{total} - Memory usage: {memory_usage:.2f} GB")
+    return progress
 
-def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[], None]) -> None:
+def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[int], int]) -> None:
     with ThreadPoolExecutor(max_workers=execution_threads) as executor:
         futures = []
         queue = create_queue(temp_frame_paths)
         queue_per_future = max(len(temp_frame_paths) // execution_threads, 1)
+        progress = 0
+        total = len(temp_frame_paths)
+        progress_bar = st.progress(0)
+        progress_text = st.empty()
         while not queue.empty():
             future = executor.submit(process_frames, source_path, pick_queue(queue, queue_per_future), update)
             futures.append(future)
         for future in as_completed(futures):
-            future.result()
+            progress = update(progress, progress_bar, progress_text, total, queue_per_future)
 
 def process_video(source_path: str, frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
-    progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    total = len(frame_paths)
-    progress_container = st.empty()
-    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        progress_container.write(progress)
-        multi_process_frame(source_path, frame_paths, process_frames, lambda: update_progress(progress))
+    multi_process_frame(source_path, frame_paths, process_frames, update_progress)
+    
+# def update_progress(progress: Any = None) -> None:
+#     process = psutil.Process(os.getpid())
+#     memory_usage = process.memory_info().rss / 1024 / 1024 / 1024
+#     progress.set_postfix({
+#         'memory_usage': '{:.2f}'.format(memory_usage).zfill(5) + 'GB',
+#         'execution_providers': execution_providers,
+#         'execution_threads': execution_threads
+#     })
+#     progress.refresh()
+#     progress.update(1)
+
+# def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[], None]) -> None:
+#     with ThreadPoolExecutor(max_workers=execution_threads) as executor:
+#         futures = []
+#         queue = create_queue(temp_frame_paths)
+#         queue_per_future = max(len(temp_frame_paths) // execution_threads, 1)
+#         while not queue.empty():
+#             future = executor.submit(process_frames, source_path, pick_queue(queue, queue_per_future), update)
+#             futures.append(future)
+#         for future in as_completed(futures):
+#             future.result()
+
+# def process_video(source_path: str, frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
+#     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
+#     total = len(frame_paths)
+#     progress_container = st.empty()
+#     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+#         progress_container.write(progress)
+#         multi_process_frame(source_path, frame_paths, process_frames, lambda: update_progress(progress))
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
     return [execution_provider.replace('ExecutionProvider', '').lower() for execution_provider in execution_providers]
