@@ -10,6 +10,7 @@ import moviepy.editor as mp
 from PIL import Image
 from streamlit_image_select import image_select
 import glob
+import requests
 from streamlit_lottie import st_lottie
 from FinalFaceSwapCode import run
 
