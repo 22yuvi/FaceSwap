@@ -180,7 +180,9 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
 def process_video(source_path: str, frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(frame_paths)
+    progress_container = st.empty()
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+        progress_container.write(progress)
         multi_process_frame(source_path, frame_paths, process_frames, lambda: update_progress(progress))
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
@@ -228,21 +230,10 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
     source_face = get_one_face(cv2.imread(source_path))
     reference_frame = cv2.imread(temp_frame_paths[0])
     reference_face = get_one_face(reference_frame)
-    total_frames = total = len(temp_frame_paths)
-    progress_bar = st.progress(0)
-    start_time = time.time()
-    time_text = st.text("Time Remaining: ")
-    i = 0
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
         cv2.imwrite(temp_frame_path, result)
-        elapsed_time = time.time() - start_time
-        i = i + 1
-        frames_completed = i
-        frames_remaining = total_frames - frames_completed
-        time_remaining = (frames_remaining / frames_completed) * elapsed_time
-        progress_bar.progress(frames_completed / total_frames) 
         if update:
             update()
 
