@@ -360,6 +360,7 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> Optio
 def run(quality: bool) -> Optional[str]:
     if not pre_check():
         return
-    conditional_download(face_swapper_path, ['https://huggingface.co/CountFloyd/deepfake/resolve/main/inswapper_128.onnx'])
-    conditional_download(face_enhancer_path, ['https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth'])
+    with st.spinner("Preprocessing..."):
+        conditional_download(face_swapper_path, ['https://huggingface.co/CountFloyd/deepfake/resolve/main/inswapper_128.onnx'])
+        conditional_download(face_enhancer_path, ['https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth'])
     start(quality)
