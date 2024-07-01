@@ -31,8 +31,6 @@ with st.sidebar:
                            menu_icon='list',
                            icons=['person', 'upload'],
                            default_index=0)
-# getting the working directory of the main.py
-
 
 st.title('Face Swap using Inswapper')
 col1, col2 = st.columns([1, 3])
