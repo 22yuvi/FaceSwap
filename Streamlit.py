@@ -107,56 +107,58 @@ if selected == 'Upload Custom Image':
                                           'Normal'],
                                         menu_icon='person',
                                         default_index=1)
+                
 if VidOptSel == 'Upload Custom Video':
     uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
 if VidOptSel == 'Input Youtube Url':
     link = st.text_input("YouTube Link (The longer the video, the longer the processing time)")
+    
 if st.button("Swap"):
     if link:
-        uploaded_file = download_video(link)
+        yt_video = download_video(link)
+        video = cv2.VideoCapture("video.mp4") 
+        col1, col2 = st.columns([0.5, 0.5])
+        with col1:
+            st.markdown('<p style="text-align: center;">Before</p>', unsafe_allow_html=True)
+            st.video(yt_video)   
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         if file_extension in ['.mp4', '.avi', '.mov', '.mkv']:
-            # Save the video file to a temporary location
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(uploaded_file.read())
-
-            audio = mp.AudioFileClip(temp_file.name)
-            video = cv2.VideoCapture(temp_file.name)
-
+            audio = mp.AudioFileClip(uploaded_file.name)
+            video = cv2.VideoCapture(uploaded_file.name)
             col1, col2 = st.columns([0.5, 0.5])
             with col1:
                 st.markdown('<p style="text-align: center;">Before</p>', unsafe_allow_html=True)
                 st.video(temp_file.name)
-
-            with col2:
-                st.markdown('<p style="text-align: center;">After</p>', unsafe_allow_html=True)
-                total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-                fps = video.get(cv2.CAP_PROP_FPS)
-                width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # Codec for .mp4 files
-                output_path = os.path.join(working_dir, "target.mp4")
-                out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-                for _ in tqdm(range(total_frames), unit='frame', desc="Progress"):
-                    ret, frame = video.read()
-                    out.write(frame) 
-                    if not ret:
-                        break
-                source_img = os.path.join(working_dir, "source.png")
-                img.save(source_img)
-                out.release()
-                if quality == 'High':
-                  boolq = True
-                else:
-                  boolq = False
-                run(boolq)
-                video.release()
-                st.download_button(
-                            label="Download Swapped Video",
-                            data=open(output_vid, "rb").read(),
-                            file_name="swapped_video.mp4"
-                        )
+    if uploaded_file is not None or link is not None:
+        with col2:
+            st.markdown('<p style="text-align: center;">After</p>', unsafe_allow_html=True)
+            total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = video.get(cv2.CAP_PROP_FPS)
+            width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # Codec for .mp4 files
+            output_path = os.path.join(working_dir, "target.mp4")
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            for _ in tqdm(range(total_frames), unit='frame', desc="Progress"):
+                ret, frame = video.read()
+                out.write(frame) 
+                if not ret:
+                    break
+            source_img = os.path.join(working_dir, "source.png")
+            img.save(source_img)
+            out.release()
+            if quality == 'High':
+              boolq = True
+            else:
+              boolq = False
+            run(boolq)
+            video.release()
+            st.download_button(
+                        label="Download Swapped Video",
+                        data=open(output_vid, "rb").read(),
+                        file_name="swapped_video.mp4"
+                    )
 
 
     
