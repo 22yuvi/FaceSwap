@@ -32,7 +32,7 @@ st.set_page_config(page_title="Face Swapper",
 
 with st.sidebar:
     selected = option_menu('Image Options',
-                           ['Use Available Image',
+                           ['Use Available Images',
                             'Upload Custom Image'],
                            menu_icon='list',
                            icons=['person', 'upload'],
@@ -92,7 +92,7 @@ if selected == 'Use Available Images':
         )
     img = Image.open(image)
 
-if selected == 'Upload Custom Images':
+if selected == 'Upload Custom Image':
     uploaded_file = st.file_uploader("Upload your images here...", type=['jpg', 'png', 'jpeg'])
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
