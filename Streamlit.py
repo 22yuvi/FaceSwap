@@ -72,7 +72,7 @@ if selected == 'Use Available Images':
             captions=[os.path.splitext(os.path.basename(image))[0] for image in imgs],
         )
     if gender == 'Female':
-        imgs = glob.glob((os.path.join(glob.escape(male_images), '*.' + 'jpg')))
+        imgs = glob.glob((os.path.join(glob.escape(female_images), '*.' + 'jpeg')))
         image = image_select(
             label="Female",
             images=imgs,
