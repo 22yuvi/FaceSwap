@@ -167,7 +167,7 @@ def update_progress(progress, progress_bar, progress_text, total, queue_per_futu
         progress_bar.empty()
     return progress
 
-def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[int], int]) -> None:
+def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update) -> None:
     with ThreadPoolExecutor(max_workers=execution_threads) as executor:
         futures = []
         queue = create_queue(temp_frame_paths)
@@ -177,7 +177,7 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
         progress_bar = st.progress(0)
         progress_text = st.empty()
         while not queue.empty():
-            future = executor.submit(process_frames, source_path, pick_queue(queue, queue_per_future), update)
+            future = executor.submit(process_frames, source_path, pick_queue(queue, queue_per_future))
             futures.append(future)
         for future in as_completed(futures):
             progress = update(progress, progress_bar, progress_text, total, queue_per_future)
@@ -226,7 +226,7 @@ def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) ->
         temp_frame = swap_face(source_face, target_face, temp_frame)
     return temp_frame
 
-def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
+def process_frames(source_path: str, temp_frame_paths: List[str]) -> None:
     source_face = get_one_face(cv2.imread(source_path))
     reference_frame = cv2.imread(temp_frame_paths[0])
     reference_face = get_one_face(reference_frame)
@@ -234,9 +234,6 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
         cv2.imwrite(temp_frame_path, result)
-        if update:
-            update()
-
 
 # def get_face_enhancer() -> Any:
 #     global FACE_ENHANCER
