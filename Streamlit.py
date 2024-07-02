@@ -107,6 +107,9 @@ if selected == 'Upload Custom Image':
                                           'Normal'],
                                         menu_icon='person',
                                         default_index=1)
+
+link = None
+uploaded_file = None
                 
 if VidOptSel == 'Upload Custom Video':
     uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
