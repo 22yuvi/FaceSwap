@@ -12,6 +12,7 @@ from streamlit_image_select import image_select
 import glob
 import requests
 from streamlit_lottie import st_lottie
+from pytube import YouTube
 from FinalFaceSwapCode import run
 
 def load_lottieurl(url: str):
@@ -19,17 +20,28 @@ def load_lottieurl(url: str):
     if r.status_code != 200:
         return None
     return r.json()
+
+def download_video(link):
+    yt = YouTube(link)
+    video = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first().download(filename="video.mp4")
+    return video
   
 st.set_page_config(page_title="Face Swapper",
                    layout="wide",
                    page_icon="🧑‍⚕️")
 
 with st.sidebar:
-    selected = option_menu('Options',
-                           ['Use Available Images',
-                            'Upload Custom Images'],
+    selected = option_menu('Image Options',
+                           ['Use Available Image',
+                            'Upload Custom Image'],
                            menu_icon='list',
                            icons=['person', 'upload'],
+                           default_index=0)
+    VidOptSel = option_menu('Video Options',
+                           ['Upload Custom Video',
+                            'Input Youtube Url'],
+                           menu_icon='list',
+                           icons=['upload', 'person'],
                            default_index=0)
 
 st.title('Face Swap using Inswapper')
@@ -95,9 +107,11 @@ if selected == 'Upload Custom Images':
                                           'Normal'],
                                         menu_icon='person',
                                         default_index=1)
-
-uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
-
+if VidOptSel == 'Upload Custom Video':
+    uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
+if VidOptSel == 'Input Youtube Url':
+    link = st.text_input("YouTube Link (The longer the video, the longer the processing time)")
+    uploaded_file = download_video(link)
 if st.button("Swap"):
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
