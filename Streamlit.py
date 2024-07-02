@@ -111,8 +111,9 @@ if VidOptSel == 'Upload Custom Video':
     uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
 if VidOptSel == 'Input Youtube Url':
     link = st.text_input("YouTube Link (The longer the video, the longer the processing time)")
-    uploaded_file = download_video(link)
 if st.button("Swap"):
+    if link:
+        uploaded_file = download_video(link)
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         if file_extension in ['.mp4', '.avi', '.mov', '.mkv']:
