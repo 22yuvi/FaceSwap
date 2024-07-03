@@ -127,8 +127,10 @@ if st.button("Swap"):
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         if file_extension in ['.mp4', '.avi', '.mov', '.mkv']:
-            audio = mp.AudioFileClip(uploaded_file.name)
-            video = cv2.VideoCapture(uploaded_file.name)
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.write(uploaded_file.read())
+            audio = mp.AudioFileClip(temp_file.name)
+            video = cv2.VideoCapture(temp_file.name)
             col1, col2 = st.columns([0.5, 0.5])
             with col1:
                 st.markdown('<p style="text-align: center;">Before</p>', unsafe_allow_html=True)
