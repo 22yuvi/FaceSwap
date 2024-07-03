@@ -12,6 +12,7 @@ from streamlit_image_select import image_select
 import glob
 import requests
 from streamlit_lottie import st_lottie
+from pytube import YouTube
 from FinalFaceSwapCode import run
 
 def load_lottieurl(url: str):
@@ -19,17 +20,28 @@ def load_lottieurl(url: str):
     if r.status_code != 200:
         return None
     return r.json()
+
+def download_video(link):
+    yt = YouTube(link)
+    video = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first().download(filename="video.mp4")
+    return video
   
 st.set_page_config(page_title="Face Swapper",
                    layout="wide",
                    page_icon="🧑‍⚕️")
 
 with st.sidebar:
-    selected = option_menu('Options',
+    selected = option_menu('Image Options',
                            ['Use Available Images',
-                            'Upload Custom Images'],
+                            'Upload Custom Image'],
                            menu_icon='list',
                            icons=['person', 'upload'],
+                           default_index=0)
+    VidOptSel = option_menu('Video Options',
+                           ['Upload Custom Video',
+                            'Input Youtube Url'],
+                           menu_icon='list',
+                           icons=['upload', 'person'],
                            default_index=0)
 
 st.title('Face Swap using Inswapper')
@@ -72,7 +84,7 @@ if selected == 'Use Available Images':
             captions=[os.path.splitext(os.path.basename(image))[0] for image in imgs],
         )
     if gender == 'Female':
-        imgs = glob.glob((os.path.join(glob.escape(male_images), '*.' + 'jpg')))
+        imgs = glob.glob((os.path.join(glob.escape(female_images), '*.' + 'jpeg')))
         image = image_select(
             label="Female",
             images=imgs,
@@ -80,7 +92,7 @@ if selected == 'Use Available Images':
         )
     img = Image.open(image)
 
-if selected == 'Upload Custom Images':
+if selected == 'Upload Custom Image':
     uploaded_file = st.file_uploader("Upload your images here...", type=['jpg', 'png', 'jpeg'])
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
@@ -96,52 +108,60 @@ if selected == 'Upload Custom Images':
                                         menu_icon='person',
                                         default_index=1)
 
-uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
-
+link = None
+uploaded_file = None
+                
+if VidOptSel == 'Upload Custom Video':
+    uploaded_file = st.file_uploader("Upload your video here...", type=['mp4', 'mov', 'avi', 'mkv'])
+if VidOptSel == 'Input Youtube Url':
+    link = st.text_input("YouTube Link (The longer the video, the longer the processing time)")
+    
 if st.button("Swap"):
+    if link:
+        yt_video = download_video(link)
+        video = cv2.VideoCapture("video.mp4") 
+        col1, col2 = st.columns([0.5, 0.5])
+        with col1:
+            st.markdown('<p style="text-align: center;">Before</p>', unsafe_allow_html=True)
+            st.video(yt_video)   
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         if file_extension in ['.mp4', '.avi', '.mov', '.mkv']:
-            # Save the video file to a temporary location
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(uploaded_file.read())
-
-            audio = mp.AudioFileClip(temp_file.name)
-            video = cv2.VideoCapture(temp_file.name)
-
+            audio = mp.AudioFileClip(uploaded_file.name)
+            video = cv2.VideoCapture(uploaded_file.name)
             col1, col2 = st.columns([0.5, 0.5])
             with col1:
                 st.markdown('<p style="text-align: center;">Before</p>', unsafe_allow_html=True)
                 st.video(temp_file.name)
-
-            with col2:
-                st.markdown('<p style="text-align: center;">After</p>', unsafe_allow_html=True)
-                total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-                fps = video.get(cv2.CAP_PROP_FPS)
-                width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # Codec for .mp4 files
-                output_path = os.path.join(working_dir, "target.mp4")
-                out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-                for _ in tqdm(range(total_frames), unit='frame', desc="Progress"):
-                    ret, frame = video.read()
-                    out.write(frame) 
-                    if not ret:
-                        break
-                source_img = os.path.join(working_dir, "source.png")
-                img.save(source_img)
-                out.release()
-                if quality == 'High':
-                  boolq = True
-                else:
-                  boolq = False
-                run(boolq)
-                video.release()
-                st.download_button(
-                            label="Download Swapped Video",
-                            data=open(output_vid, "rb").read(),
-                            file_name="swapped_video.mp4"
-                        )
+    if uploaded_file is not None or link is not None:
+        with col2:
+            st.markdown('<p style="text-align: center;">After</p>', unsafe_allow_html=True)
+            total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = video.get(cv2.CAP_PROP_FPS)
+            width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # Codec for .mp4 files
+            output_path = os.path.join(working_dir, "target.mp4")
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            for _ in tqdm(range(total_frames), unit='frame', desc="Progress"):
+                ret, frame = video.read()
+                out.write(frame) 
+                if not ret:
+                    break
+            source_img = os.path.join(working_dir, "source.png")
+            img.save(source_img)
+            out.release()
+            if quality == 'High':
+              boolq = True
+            else:
+              boolq = False
+            run(boolq)
+            video.release()
+            st.download_button(
+                        label="Download Swapped Video",
+                        data=open(output_vid, "rb").read(),
+                        file_name="swapped_video.mp4"
+                    )
 
 
     

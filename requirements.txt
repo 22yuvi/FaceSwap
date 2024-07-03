@@ -4,3 +4,4 @@ streamlit==1.29.0
 streamlit-option-menu==0.3.6
 streamlit_image_select
 streamlit_lottie==0.0.5
+pytube
