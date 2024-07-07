@@ -180,6 +180,7 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
             future = executor.submit(process_frames, source_path, pick_queue(queue, queue_per_future))
             futures.append(future)
         for future in as_completed(futures):
+            future.result()
             progress = update(progress, progress_bar, progress_text, total, queue_per_future)
 
 def process_video(source_path: str, frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
