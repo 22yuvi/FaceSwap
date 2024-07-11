@@ -31,7 +31,7 @@ import numpy
 from insightface.app.common import Face
 # from gfpgan.utils import GFPGANer
 import streamlit as st
-
+import moviepy.editor as mp
 
 Face = Face
 Frame = numpy.ndarray[Any, Any]
