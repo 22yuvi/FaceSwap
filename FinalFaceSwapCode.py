@@ -196,7 +196,7 @@ def decode_execution_providers(execution_providers: List[str]) -> List[str]:
 def suggest_execution_providers() -> List[str]:
     return encode_execution_providers(onnxruntime.get_available_providers())
 
-execution_providers = decode_execution_providers(suggest_execution_providers())
+execution_providers = ['CUDAExecutionProvider']
 
 def get_face_swapper() -> Any:
     global FACE_SWAPPER
