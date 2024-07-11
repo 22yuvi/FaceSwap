@@ -306,12 +306,21 @@ def restore_audio(target_path: str, temp_directory_path: str, output_path: str) 
     if not done:
         move_temp(temp_output_path, output_path)
 
+def clean_temp(target_path: str) -> None:
+    target_directory_path = os.path.dirname(target_path)
+    temp_directory_path = os.path.join(target_directory_path, 'temp', target_name)
+    parent_directory_path = os.path.dirname(temp_directory_path)
+    if not roop.globals.keep_frames and os.path.isdir(temp_directory_path):
+        shutil.rmtree(temp_directory_path)
+    if os.path.exists(parent_directory_path) and not os.listdir(parent_directory_path):
+        os.rmdir(parent_directory_path)
+
 def start(quality: bool) -> Optional[str]:
     if not pre_start():
         return
     with st.spinner("Preparing..."):
         target_directory_path = os.path.dirname(target_path)
-        temp_directory_path = os.path.join(target_directory_path, 'temp')
+        temp_directory_path = os.path.join(target_directory_path, 'temp', target_name)
         Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
         fps = detect_fps(target_path)
     with st.spinner(f'Extracting frames with {fps} FPS...'):
@@ -330,6 +339,7 @@ def start(quality: bool) -> Optional[str]:
         create_video(target_path, temp_directory_path, fps)
     with st.spinner('Restoring audio...'):
         restore_audio(target_path, temp_directory_path, output_path)
+        clean_temp(target_path)
     if is_video(output_path):
         st.video(output_path)
     else:
