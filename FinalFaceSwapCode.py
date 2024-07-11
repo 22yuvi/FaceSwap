@@ -305,10 +305,14 @@ def restore_audio(target_path: str, temp_directory_path: str, output_path: str) 
     done = run_ffmpeg(['-i', temp_output_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
     if not done:
         move_temp(temp_output_path, output_path)
+        audio = mp.AudioFileClip(target_path)
+        clip = mp.VideoFileClip(output_path)
+        clip = clip.set_audio(audio)
+        clip.write_videofile(output_path, codec="libx264")        
 
 def clean_temp(target_path: str) -> None:
     target_directory_path = os.path.dirname(target_path)
-    temp_directory_path = os.path.join(target_directory_path, 'temp', target_name)
+    temp_directory_path = os.path.join(target_directory_path, 'temp')
     parent_directory_path = os.path.dirname(temp_directory_path)
     if os.path.isdir(temp_directory_path):
         shutil.rmtree(temp_directory_path)
@@ -320,7 +324,7 @@ def start(quality: bool) -> Optional[str]:
         return
     with st.spinner("Preparing..."):
         target_directory_path = os.path.dirname(target_path)
-        temp_directory_path = os.path.join(target_directory_path, 'temp', target_name)
+        temp_directory_path = os.path.join(target_directory_path, 'temp')
         Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
         fps = detect_fps(target_path)
     with st.spinner(f'Extracting frames with {fps} FPS...'):
