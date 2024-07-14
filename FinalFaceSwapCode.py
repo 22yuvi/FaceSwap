@@ -304,9 +304,9 @@ def restore_audio(target_path: str, temp_directory_path: str, output_path: str) 
     temp_output_path = os.path.join(temp_directory_path, 'temp.mp4')
     done = run_ffmpeg(['-i', temp_output_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
     if not done:
-        move_temp(temp_output_path, output_path)
+        # move_temp(temp_output_path, output_path)
         audio = mp.AudioFileClip(target_path)
-        clip = mp.VideoFileClip(output_path)
+        clip = mp.VideoFileClip(temp_output_path)
         clip = clip.set_audio(audio)
         clip.write_videofile(output_path, codec="libx264")        
 
