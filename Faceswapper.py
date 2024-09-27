@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue
 import tqdm
 import os
+import urllib
 import threading
 from typing import List, Optional, Any, Callable
 import streamlit as st
