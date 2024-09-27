@@ -5,7 +5,7 @@ import onnxruntime
 import torch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue
-import tqdm.tqdm as tqdm
+import tqdm as tqdm
 import os
 import urllib
 import threading
@@ -81,7 +81,7 @@ def process_video(source_path, target_path, output_path):
             future = executor.submit(process_frame, source_face, frame)
             futures.append(future)
         
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing frames"):
+        for future in tqdm.tqdm(as_completed(futures), total=len(futures), desc="Processing frames"):
             frame = future.result()
             output_video.write(frame)
     
@@ -100,7 +100,7 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> Optio
         if not os.path.exists(download_file_path):
             request = urllib.request.urlopen(url)  # type: ignore[attr-defined]
             total = int(request.headers.get('Content-Length', 0))
-            with tqdm(total=total, desc='Downloading', unit='B', unit_scale=True, unit_divisor=1024) as progress:
+            with tqdm.tqdm(total=total, desc='Downloading', unit='B', unit_scale=True, unit_divisor=1024) as progress:
                 urllib.request.urlretrieve(url, download_file_path, reporthook=lambda count, block_size, total_size: progress.update(block_size))  # type: ignore[attr-defined]
 
 def run(quality: bool) -> Optional[str]:
