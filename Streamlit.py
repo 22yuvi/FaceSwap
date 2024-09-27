@@ -6,6 +6,7 @@ import tempfile
 from tqdm import tqdm
 import time
 import cv2
+import urllib
 import moviepy.editor as mp
 from PIL import Image
 from streamlit_image_select import image_select
