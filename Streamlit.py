@@ -13,7 +13,7 @@ import glob
 import requests
 from streamlit_lottie import st_lottie
 from pytube import YouTube
-from FinalFaceSwapCode import run
+from Faceswapper import run
 
 def load_lottieurl(url: str):
     r = requests.get(url)
