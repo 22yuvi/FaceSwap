@@ -5,7 +5,7 @@ import onnxruntime
 import torch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue
-import tqdm
+import tqdm.tqdm as tqdm
 import os
 import urllib
 import threading
@@ -81,7 +81,7 @@ def process_video(source_path, target_path, output_path):
             future = executor.submit(process_frame, source_face, frame)
             futures.append(future)
         
-        for future in tqdm.tqdm(as_completed(futures), total=len(futures), desc="Processing frames"):
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing frames"):
             frame = future.result()
             output_video.write(frame)
     
